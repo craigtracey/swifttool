@@ -132,7 +132,14 @@ class SwiftRingsDefinition(object):
             commands.append(self._ring_create_command(ringtype, outdir))
             for zone, nodes in self.zones.iteritems():
                 for node, disks in nodes.iteritems():
-                    for disk in disks['disks']:
+                    ringdisks = []
+                    # Add all disks designated for ringtype
+                    if ringtype in disks['disks']:
+                        ringdisks += disks['disks'][ringtype]
+                    # Add any disks that will be used for all rings
+                    if 'all' in disks['disks']:
+                        ringdisks = list(set(ringsdisks + disks['disks']['all']))
+                    for disk in ringdisks:
                         match = re.match('(.*)\d+$', disk)
                         blockdev = '/dev/%s' % match.group(1)
 
@@ -184,11 +191,6 @@ def _fab_copy_swift_directory(local_files, remote_dir):
     put(local_files, remote_dir, mirror_local_mode=True)
 
 
-@parallel
-def _fab_start_swift_services():
-    with hide('running', 'stdout', 'stderr'):
-        sudo("swift-init start all", pty=False, shell=False)
-
 def bootstrap(args):
     rc = 0
     if not os.path.exists(args.config):
@@ -205,7 +207,6 @@ def bootstrap(args):
         tempfiles = os.path.join(tempdir, "*")
         execute(_fab_copy_swift_directory, tempfiles, args.outdir,
                 hosts=ringsdef.nodes)
-        execute(_fab_start_swift_services, hosts=ringsdef.nodes)
     except Exception as e:
         print >> sys.stderr, "There was an error bootrapping: '%s'" % e
         rc = -1
