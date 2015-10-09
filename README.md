@@ -4,6 +4,7 @@ a tool to help us properly boostrap and manage a swift environment.
 
 Sample ring_definition.yml to use SSD for account/container rings and SATA for object ring:
 
+```
 ---
 part_power: 13
 replicas: 3
@@ -23,11 +24,12 @@ zones:
           - sde1
           - sdf1
           - sdg1
-
+```
 
 
 Sample ring_definition.yml where disks belong to all rings:
 
+```
 ---
 part_power: 13
 replicas: 3
@@ -36,14 +38,14 @@ zones:
   z1:
     node1:
       disks:
-        all:
-          - sdb1
-          - sdc1
-          - sdc1
-          - sdd1
-          - sde1
-          - sdf1
-          - sdg1
+        - sdb1
+        - sdc1
+        - sdc1
+        - sdd1
+        - sde1
+        - sdf1
+        - sdg1
+```
 
 license
 =======

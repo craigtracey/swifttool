@@ -132,13 +132,18 @@ class SwiftRingsDefinition(object):
             commands.append(self._ring_create_command(ringtype, outdir))
             for zone, nodes in self.zones.iteritems():
                 for node, disks in nodes.iteritems():
+                    
                     ringdisks = []
                     # Add all disks designated for ringtype
-                    if ringtype in disks['disks']:
-                        ringdisks += disks['disks'][ringtype]
-                    # Add any disks that will be used for all rings
-                    if 'all' in disks['disks']:
-                        ringdisks = list(set(ringsdisks + disks['disks']['all']))
+                    if isinstance(disks['disks'], dict):
+                        if ringtype in disks['disks']:
+                            ringdisks += disks['disks'][ringtype]
+                        else:
+                            raise Exception("Malformed ring_defintion.yml. "
+                                            "Unknown ringtype: %s" % ringtype)
+                    elif isinstance(disks['disks'], list):
+                        ringdisks = disks['disks']
+                    
                     for disk in ringdisks:
                         match = re.match('(.*)\d+$', disk)
                         blockdev = '/dev/%s' % match.group(1)
